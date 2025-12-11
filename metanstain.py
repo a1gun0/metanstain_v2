@@ -230,7 +230,6 @@ def run_tool_on_file(tool_key: str, file_path: str, tool_args: List[str]) -> Dic
     return result
 
 
- main
     info = TOOLS.get(tool_key)
     if not info:
         return "Herramienta no definida."
@@ -253,7 +252,7 @@ def run_tool_on_file(tool_key: str, file_path: str, tool_args: List[str]) -> Dic
         return output
     except FileNotFoundError:
         return "La herramienta no está instalada o no se encontró en PATH."
-main
+ main
     except Exception as exc:
         return f"No se pudo obtener la ayuda: {exc}"
 
