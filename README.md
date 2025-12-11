@@ -1,6 +1,11 @@
 # metanstain v2
+A diferencia de metanstain v1 que estaba diseñado para un usuario neofito o a nivel fundacional, el v2 esta pensado para agilizar el trabajo de el forence, en este caso, yo.
+lo que me interesaba lograr era poder tener un solo script que me permita correr diferentes herramientas forences en los archivos de una carpeta (no recursivamente) de forma de poder obtener un .json con los metadatos ordenados de cada archivo dentro del directorio.
 
-metanstain es un lanzador DFIR en Python que orquesta utilidades de línea de comandos como `exiftool`, `file`, `strings`, `xxd`, `binwalk`, `bulk_extractor`, `pdfinfo` e `identify`. El script verifica si cada herramienta está instalada, intenta instalarla con `apt` si falta, filtra argumentos peligrosos y permite ejecutar análisis por lote sin detenerse ante fallos individuales.
+metanstain v2 es un lanzador DFIR en Python que orquesta utilidades de línea de comandos como `exiftool`, `file`, `strings`, `xxd`, `binwalk`, `bulk_extractor`, `pdfinfo` e `identify`. El script verifica si cada herramienta está instalada, intenta instalarla con `apt` si falta, filtra argumentos peligrosos y permite ejecutar análisis por lote sin detenerse ante fallos individuales.
+
+Cabe destacar que se le pueden pasar los mismos parametros que a las herramientas en las que esta basado luego de elegir la herramienta.
+a futuro quizas reemplace los nombres de las  herramientas por un numero o letra, quizas en la v3.
 
 ## Requisitos
 - Python 3.8 o superior disponible en el sistema.
@@ -19,6 +24,8 @@ metanstain es un lanzador DFIR en Python que orquesta utilidades de línea de co
 ## Uso básico
 El parámetro principal es la herramienta a invocar:
 ```bash
+python metanstain.py -h
+
 python metanstain.py -t <herramienta> [opciones_de_metanstain] -- [args_de_herramienta]
 ```
 
