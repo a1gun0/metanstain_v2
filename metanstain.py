@@ -230,6 +230,7 @@ def run_tool_on_file(tool_key: str, file_path: str, tool_args: List[str]) -> Dic
     return result
 
 
+def get_tool_help_output(tool_key: str, limit: Optional[int] = None) -> str:
     info = TOOLS.get(tool_key)
     if not info:
         return "Herramienta no definida."
@@ -241,7 +242,6 @@ def run_tool_on_file(tool_key: str, file_path: str, tool_args: List[str]) -> Dic
             capture_output=True,
             text=True,
             check=False,
- main
         )
         output = proc.stdout or proc.stderr
         if not output:
@@ -252,7 +252,6 @@ def run_tool_on_file(tool_key: str, file_path: str, tool_args: List[str]) -> Dic
         return output
     except FileNotFoundError:
         return "La herramienta no está instalada o no se encontró en PATH."
- main
     except Exception as exc:
         return f"No se pudo obtener la ayuda: {exc}"
 
@@ -312,13 +311,66 @@ def handle_help_and_exit(parser: argparse.ArgumentParser) -> None:
 
 
 def main(argv: Optional[List[str]] = None) -> None:
- main
-                    "herramienta": args.tool,
-                    "args": unknown_args,
-                    "stdout": "",
-                    "stderr": "",
-                    "exito": False,
- main
+    parser = create_parser()
+    args, unknown_args = parser.parse_known_args(argv)
+
+    if args.help:
+        handle_help_and_exit(parser)
+
+    if args.tool_help:
+        show_full_tools_help()
+        sys.exit(0)
+
+    if not args.tool:
+        print("Error: Se requiere especificar una herramienta con -t/--tool")
+        handle_help_and_exit(parser)
+
+    if not ensure_tool_installed(args.tool):
+        print(f"Error: No se puede usar la herramienta '{args.tool}' (no instalada y no se pudo instalar).")
+        sys.exit(1)
+
+    valid_paths, missing_paths = resolve_paths_from_args(args.paths, args.dir, args.list_file)
+
+    if not valid_paths:
+        print("Error: No se encontraron archivos para procesar.")
+        if missing_paths:
+            print("Rutas no encontradas:")
+            for path in missing_paths:
+                print(f"  - {path}")
+        sys.exit(1)
+
+    is_safe, safety_msg = filter_dangerous_args(unknown_args)
+    if not is_safe:
+        print(f"Error de seguridad: {safety_msg}")
+        sys.exit(1)
+
+    results = []
+    for file_path in valid_paths:
+        result = run_tool_on_file(args.tool, file_path, unknown_args)
+        results.append(result)
+
+    output_text = ""
+    if args.json:
+        output_text = build_json_results(results)
+    else:
+        for result in results:
+            output_text += f"\n{'='*60}\n"
+            output_text += f"Archivo: {result['archivo']}\n"
+            output_text += f"Herramienta: {result['herramienta']}\n"
+            if result.get("exito"):
+                output_text += f"Salida:\n{result['stdout']}\n"
+            else:
+                output_text += f"Error: {result['error']}\n"
+                if result.get("stderr"):
+                    output_text += f"Stderr:\n{result['stderr']}\n"
+
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as fh:
+            fh.write(output_text)
+        print(f"Resultados guardados en: {args.output}")
+    else:
+        print(output_text)
+
 
 if __name__ == "__main__":
     main()
