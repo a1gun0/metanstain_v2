@@ -230,9 +230,7 @@ def run_tool_on_file(tool_key: str, file_path: str, tool_args: List[str]) -> Dic
     return result
 
 
-def get_tool_help_output(
-    tool_key: str, limit: Optional[int] = None, timeout: float = 8.0
-) -> str:
+ main
     info = TOOLS.get(tool_key)
     if not info:
         return "Herramienta no definida."
@@ -244,7 +242,7 @@ def get_tool_help_output(
             capture_output=True,
             text=True,
             check=False,
-            timeout=timeout,
+ main
         )
         output = proc.stdout or proc.stderr
         if not output:
@@ -255,8 +253,7 @@ def get_tool_help_output(
         return output
     except FileNotFoundError:
         return "La herramienta no está instalada o no se encontró en PATH."
-    except subprocess.TimeoutExpired:
-        return "Tiempo de espera agotado al obtener la ayuda."
+main
     except Exception as exc:
         return f"No se pudo obtener la ayuda: {exc}"
 
@@ -316,112 +313,13 @@ def handle_help_and_exit(parser: argparse.ArgumentParser) -> None:
 
 
 def main(argv: Optional[List[str]] = None) -> None:
-    try:
-        parser = create_parser()
-        args, unknown_args = parser.parse_known_args(argv)
-
-        if args.help:
-            handle_help_and_exit(parser)
-
-        if args.tool_help:
-            show_full_tools_help()
-            return
-
-        if not args.tool:
-            print("Debe especificar una herramienta con -t/--tool.")
-            sys.exit(1)
-
-        if args.tool not in TOOLS:
-            print(f"Herramienta desconocida: {args.tool}.")
-            print("Herramientas disponibles: " + ", ".join(sorted(TOOLS.keys())))
-            sys.exit(1)
-
-        if not ensure_tool_installed(args.tool):
-            print(
-                f"La herramienta '{args.tool}' no está disponible. Continúa el procesamiento pero puede fallar."
-            )
-
-        valid_args, error_msg = filter_dangerous_args(unknown_args)
-        if not valid_args:
-            print(error_msg)
-
-        selected_paths, missing_paths = resolve_paths_from_args(
-            args.paths, args.dir, args.list_file
-        )
-        all_results: List[Dict[str, object]] = []
-
-        for missing in missing_paths:
-            all_results.append(
-                {
-                    "archivo": missing,
+ main
                     "herramienta": args.tool,
                     "args": unknown_args,
                     "stdout": "",
                     "stderr": "",
                     "exito": False,
-                    "error": "Ruta no encontrada o no es un archivo regular",
-                    "tipo": detect_file_type(missing),
-                }
-            )
-
-        if not selected_paths:
-            if not missing_paths:
-                print("No se proporcionaron rutas válidas para procesar.")
-
-        if not valid_args:
-            for path in selected_paths:
-                all_results.append(
-                    {
-                        "archivo": path,
-                        "herramienta": args.tool,
-                        "args": unknown_args,
-                        "stdout": "",
-                        "stderr": "",
-                        "exito": False,
-                        "error": error_msg,
-                        "tipo": detect_file_type(path),
-                    }
-                )
-        else:
-            for path in sorted(selected_paths):
-                result = run_tool_on_file(args.tool, path, unknown_args)
-                all_results.append(result)
-
-        if args.json:
-            output_content = build_json_results(all_results)
-        else:
-            lines: List[str] = []
-            for item in all_results:
-                lines.append(f"Archivo: {item['archivo']}")
-                lines.append(f"Herramienta: {item['herramienta']}")
-                lines.append(
-                    f"Argumentos: {' '.join(item['args']) if item['args'] else 'Ninguno'}"
-                )
-                tipo = item.get("tipo") or {}
-                if tipo.get("extension") or tipo.get("descripcion"):
-                    lines.append(
-                        f"Tipo: {tipo.get('extension') or 'desconocido'} | {tipo.get('descripcion') or 'sin descripción'}"
-                    )
-                lines.append(f"Éxito: {'sí' if item['exito'] else 'no'}")
-                if item.get("error"):
-                    lines.append(f"Error: {item['error']}")
-                if item.get("stdout"):
-                    lines.append("--- STDOUT ---")
-                    lines.append(item["stdout"].rstrip())
-                if item.get("stderr"):
-                    lines.append("--- STDERR ---")
-                    lines.append(item["stderr"].rstrip())
-                lines.append("")
-            output_content = "\n".join(lines)
-
-        if args.output:
-            with open(args.output, "w", encoding="utf-8") as fh:
-                fh.write(output_content)
-            print(f"Salida escrita en {args.output}")
-        else:
-            print(output_content)
-    except KeyboardInterrupt:
-        print("Ejecución interrumpida por el usuario.")
+ main
 
 if __name__ == "__main__":
     main()
